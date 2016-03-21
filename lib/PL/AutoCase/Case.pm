@@ -87,6 +87,7 @@ sub _load_ta {
             $self->warn("Found duplicate TA_NAME '$ta_name', ignore it!");
         }
         else {
+            $self->debug("load TA_NAME: '$ta_name' into TA container");
             my $ta = PL::AutoCase::Case::TA->new(name => $ta_name, @ta_options);
             $self->{TA}->{$ta_name} = $ta;
             my (@para, @val);
@@ -122,13 +123,13 @@ sub _load_tc {
         if ($var->{tc_name}) {
             $tc_name = delete $var->{tc_name};
             $self->fatal("TC '$tc_name' has new line char!") if $tc_name =~ /\n/;
-            $self->debug("load TC_NAME: '$tc_name'");
             if( exists($self->{TC}->{$tc_name}) ) {
                 $self->warn("Found duplicate TC_NAME '$tc_name', ignore it!");
                 undef $tc_name;
                 next;
             }
             else {
+                $self->debug("load TC_NAME: '$tc_name' into TC container");
                 $self->{TC}->{$tc_name} = PL::AutoCase::Case::TC->new(name => $tc_name, @tc_options);
             }
         }
@@ -178,7 +179,6 @@ sub _load_ts {
         if ($var->{ts_name}) {
             $ts_name = delete $var->{ts_name};
             $self->fatal("TS '$ts_name' has new line char!") if $ts_name =~ /\n/;
-            $self->debug("load TS_NAME: '$ts_name'");
             undef $tc_name;
             undef $tc;
             if( exists($self->{TS}->{$ts_name}) ) {
@@ -187,6 +187,7 @@ sub _load_ts {
                 next;
             }
             else {
+                $self->debug("load TS_NAME: '$ts_name' into TS container");
                 $self->{TS}->{$ts_name} = PL::AutoCase::Case::TS->new(name => $ts_name, @ts_options);
             }
         }
@@ -221,7 +222,7 @@ sub _load_ts {
                 $ta = $has_ta->clone;
             }
             else {
-                $self->error("Unknown TA_NAME '$var->{ta_name}' in TS '$ts_name'->TC: '$tc_name'!");
+                $self->error("Unknown TA_NAME '$ta_name'(index $ta_index->{$ta_name}) in TS '$ts_name'->TC '$tc_name'!");
             }
         }
         while (my ($name, $def_val) = each %$var) {
@@ -259,7 +260,6 @@ sub _load_tb {
         if ($var->{tb_name}) {
             $tb_name = delete $var->{tb_name};
             $self->fatal("TB '$tb_name' has new line char!") if $tb_name =~ /\n/;
-            $self->debug("load TB_NAME: '$tb_name'");
             $ts->update_tc($tc, $tc_index->{$tc_name}) if $ts && $tc;
             undef $ts_name;
             undef $ts;
@@ -273,6 +273,7 @@ sub _load_tb {
                 next;
             }
             else {
+                $self->debug("load TB_NAME: '$tb_name' into TB container");
                 $self->{TB}->{$tb_name} = PL::AutoCase::Case::TB->new(name => $tb_name, @tb_options);
             }
         }
@@ -326,15 +327,35 @@ sub _load_tb {
         
         #################check TA update#################
         my $ta;
+        my $ta_op = 'update'; #unshift, push or update(default)
         if ($tc && $var->{ta_name}) {
             my $ta_name = delete $var->{ta_name};
-            $ta_index->{$ta_name}++;
-            $self->debug("Find TA: '$ta_name'(index $ta_index->{$ta_name}), in TB '$tb_name'->TS '$ts_name'->TC '$tc_name'");
-            if (my $has_ta = $tc->has_ta($ta_name, $ta_index->{$ta_name})) {
-                $ta = $has_ta->clone;
+            if( exists($self->{TA}->{$ta_name}) ) {
+                $ta = $self->{TA}->{$ta_name}->clone;
+                $ta_op = $var->{ta_op} if $var->{ta_op};
+                $self->debug("Find TA: '$ta_name' with operation: $ta_op, in TB '$tb_name'->TS '$ts_name'->TC '$tc_name'");
+                if ($ta_op eq 'push') {
+                    $self->debug("Pushing TA: '$ta_name' at the last position");
+                    $tc->insert_ta($ta, -1);
+                }
+                elsif ($ta_op eq 'unshift') {
+                    $self->debug("Unshifting TA: '$ta_name' at the first position");
+                    $tc->insert_ta($ta, 0);
+                }
+                else {
+                    $ta_index->{$ta_name}++;
+                    $self->debug("Updating TA: '$ta_name' at index $ta_index->{$ta_name}");
+                    if (my $has_ta = $tc->has_ta($ta_name, $ta_index->{$ta_name})) {
+                        $ta = $has_ta->clone;
+                    }
+                    else {
+                        $self->error("Unknown TA_NAME '$ta_name'(index $ta_index->{$ta_name}) in TB '$tb_name'->TS '$ts_name'->TC '$tc_name'!");
+                        undef $ta;
+                    }
+                }
             }
             else {
-                $self->error("Unknown TA_NAME '$var->{ta_name}' in TB '$tb_name'->TS '$ts_name'->TC '$tc_name'!");
+                $self->error("Unknown TA_NAME '$ts_name' in TA container!");
             }
         }
         
@@ -359,13 +380,10 @@ sub _load_tb {
                 }
             }
         }
-        $tc->update_ta($ta, $ta_index->{$ta->{name}}) if $ta;
-        #unless($done) {
-        #    $done = $tc;
-        #    $self->warn(Dumper($done));
-        #}
+        if ($ta && $ta_op eq 'update') {
+            $tc->update_ta($ta, $ta_index->{$ta->{name}});
+        }
     }
-    #$self->debug(Dumper($self->{TS}));
 }
 
 sub ta {

@@ -53,6 +53,20 @@ sub has_ta {
     return;
 }
 
+sub insert_ta {
+    my ($self, $ta, $offset) = @_;
+    $self->fatal("insert_ta rquire a TA object!") unless ref $ta eq 'PL::AutoCase::Case::TA';
+    if ($offset < 0) {
+        push @{$self->{ta}}, $ta;
+    }
+    elsif ($offset == 0) {
+        unshift @{$self->{ta}}, $ta;
+    }
+    else {
+        $self->fatal("insert_ta doesn't support positive offset now!");
+    }
+}
+
 sub update_ta {
     my ($self, $ta, $index) = @_;
     $self->fatal("update_ta rquire a TA object!") unless ref $ta eq 'PL::AutoCase::Case::TA';
