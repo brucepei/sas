@@ -1,0 +1,44 @@
+<SAS xmlns="http://cnss_sns.qualcomm.com/pl/sas" xmlns:c="http://cnss_sns.qualcomm.com/pl/sas">
+    <Global>
+        <Commands monitor="./command">
+            <cmd name="auto_case" type="perl" path="./bin/auto_case.pl" enable="1" />
+            <cmd name="update_svn" type="perl" path="./bin/update_svn.pl" enable="1" >
+                <para
+                    svn_user="lpei"
+                    svn_pass="1235"
+                />
+            </cmd>
+        </Commands>
+        <Services>
+            <svc name="spc" type="perl" path="./bin/spc.pl" enable="1" interval="0">
+                <para
+                    type="File"
+                    alive_file="alive.txt"
+                    alive_timeout="1"
+                    power_file="power.txt"
+                    power_timeout="3"
+                />
+            </svc>
+        </Services>
+    </Global>
+    <Project name="TF_1.1_win7" conf="/opt/log_server/dropbox/STA/Tufello_PCIE/win7/STA_Glob_Conf.xml">
+        <Register type="svc" name="spc" enable="1" >
+            <DUT id="SDC-CNSS-017" enable="1" pc="192.168.254.253" pc_type="APC_old" pc_port="1" />
+        </Register>
+        <Register type="cmd" name="auto_case" enable="1" />
+        <Register type="cmd" name="update_svn" enable="1" />
+    </Project>
+    <Project name="TF_1.1_win8.1" conf="/opt/log_server/dropbox/STA/Tufello_PCIE/win8.1/STA_Glob_Conf.xml">
+        <Register type="svc" name="spc" enable="1" >
+            <DUT id="SDC-CNSS-050" enable="1" pc="192.168.254.254" pc_type="APC_old" pc_port="1" />
+            <DUT id="SDC-CNSS-051" enable="1" pc="192.168.254.254" pc_type="APC_old" pc_port="1" />
+        </Register>
+        <Register type="cmd" name="auto_case" enable="1" />
+        <Register type="cmd" name="update_svn" enable="1">
+            <para
+                svn_user="jjlin"
+                svn_pass="1235"
+            />
+        </Register>
+    </Project>
+</SAS>

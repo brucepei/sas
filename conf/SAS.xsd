@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://cnss_sns.qualcomm.com/pl/sas"
+           xmlns="http://cnss_sns.qualcomm.com/pl/sas"
+           elementFormDefault="qualified">
+    <xs:element name="SAS">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Global" type="GlobalDef"/>
+                <xs:element name="Project" type="ProjectDef" maxOccurs="10"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="GlobalDef">
+        <xs:sequence>
+            <xs:element name="Commands" type="CommandsDef" />
+            <xs:element name="Services" type="ServicesDef" />
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="CommandsDef">
+        <xs:sequence>
+            <xs:element name="cmd" type="cmdDef" minOccurs="1" maxOccurs="10"/>
+        </xs:sequence>
+        <xs:attribute name="monitor" type="xs:string" use="required" />
+    </xs:complexType>
+    <xs:complexType name="ServicesDef">
+        <xs:sequence>
+            <xs:element name="svc" type="svcDef" minOccurs="1" maxOccurs="10"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="cmdDef">
+        <xs:all>
+            <xs:element name="para" type="NoChildAnyAttrDef" minOccurs="0" />
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="type" type="xs:string" use="required" />
+        <xs:attribute name="path" type="xs:string" use="required" />
+        <xs:attribute name="enable" type="xs:integer" default="1" />
+    </xs:complexType>
+    
+    <xs:complexType name="svcDef">
+        <xs:all>
+            <xs:element name="para" type="NoChildAnyAttrDef" minOccurs="0" />
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="type" type="xs:string" use="required" />
+        <xs:attribute name="path" type="xs:string" use="required" />
+        <xs:attribute name="enable" type="xs:integer" default="1" />
+        <xs:attribute name="interval" type="xs:integer" use="optional" />
+    </xs:complexType>
+
+    <xs:complexType name="ProjectDef">
+        <xs:sequence>
+            <xs:element name="Register" type="RegisterDef" minOccurs="0" maxOccurs="10" />
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="conf" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="RegisterDef">
+        <xs:sequence>
+            <xs:any namespace="##any" processContents="skip" minOccurs="0" maxOccurs="10" />
+        </xs:sequence>
+        <xs:attribute name="type" type="xs:string" use="required" />
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="enable" type="xs:integer" default="1" />
+    </xs:complexType>
+    
+    <xs:complexType name="NoChildAnyAttrDef">
+      <xs:anyAttribute namespace="##any" processContents="skip"/>
+    </xs:complexType>
+    
+</xs:schema>

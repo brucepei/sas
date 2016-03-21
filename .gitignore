@@ -1,0 +1,8 @@
+*.sqlite3 
+*.pyc 
+__pycache__ 
+*.prj
+venv
+*.komodoproject
+*.log
+testcase
