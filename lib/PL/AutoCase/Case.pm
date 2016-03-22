@@ -384,6 +384,7 @@ sub _load_tb {
             $tc->update_ta($ta, $ta_index->{$ta->{name}});
         }
     }
+    $ts->update_tc($tc, $tc_index->{$tc_name}) if $ts && $tc;
 }
 
 sub ta {
